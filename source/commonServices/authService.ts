@@ -4,7 +4,6 @@ import express, { Express } from 'express';
 export default class PlainAuthentithication {
     authenticateRequest(request: express.Request, response: express.Response, next: any) {
         let userId = request.headers.userid;
-        console.log(JSON.stringify(request.headers));
         if (!userId) {
             return response.sendStatus(401);
         }

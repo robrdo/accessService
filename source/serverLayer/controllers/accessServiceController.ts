@@ -30,9 +30,11 @@ export default class AccessServiceController {
   //post
   @postApi('')
   async createAPIkey(request: Request, response: Response): Promise<void> {
-    //get userid from request
-    let userId = 1;
+    let userId = Number(request.params.userId);
     //validate permissions
+    let permParam = request.body.permissions;
+    console.log("permParam");
+    console.log(permParam);
     let permissions: string[] = ['Read'];
     let requiredPermission: Permissions = Permissions.Read;
     //todo: validate enum with ignore case
