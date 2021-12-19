@@ -1,4 +1,4 @@
-import { JWTService } from "../../services/jwtService";
+import JWTService, {  } from "../../commonServices/jwtService";
 import express, { Express } from 'express';
 
 export class JwtMiddleware {

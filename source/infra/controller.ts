@@ -12,7 +12,7 @@ export interface RouteDescriptor {
 
 export class Controller{
     
-    public static routes: RouteDescriptor[] = [];
+    static routes: RouteDescriptor[] = [];
 
     constructor (){
         

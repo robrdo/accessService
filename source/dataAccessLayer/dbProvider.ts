@@ -1,19 +1,17 @@
 import { Sequelize } from 'sequelize-typescript'
-import { ApplicationSettings, Permissions } from '../data/models/dto';
-import { JWTService } from '../services/jwtService';
+import { Permissions } from '../data/models/dto';
 import { ApiKeyModel, ApplicationSettingsModel, TokenHistoryModel, UserModel } from './dbModels/dbmodels';
 import bcrypt, { } from 'bcrypt';
-import { isJsxOpeningFragment } from 'typescript';
 import { Initializable } from '../infra/initializable';
 //import { requireInitialize } from "../infra/Initializable";
 
 //singleton - put isinit check
 
-export class DbProvider implements Initializable {
+export default class DbProvider implements Initializable {
   private readonly _sequelize: Sequelize
   private _wasInit: boolean = false;
 
-  constructor(private jwtService: JWTService) {
+  constructor() {
     //TODO: get from env
     let envSettings = process.env;
 
@@ -36,7 +34,7 @@ export class DbProvider implements Initializable {
 
   //todo: turn into injection singleton!
 
-  public async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     if (this._wasInit) {
       return
     }
@@ -61,7 +59,7 @@ export class DbProvider implements Initializable {
 
   //@requireInitialize
   //this method is for demo version only contains the info which is not suppose to be stored
-  public async populateDb() {
+  async populateDb() {
 
     let settings = new ApplicationSettingsModel({
       apiKeyValidOnlyForIssuer: true

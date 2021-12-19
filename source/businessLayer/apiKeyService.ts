@@ -1,28 +1,25 @@
 import bcrypt, { hash, compare } from "bcrypt";
 import apiKeygenerator, { } from 'generate-api-key';
 import { resolve } from "path/posix";
-import { Model } from "sequelize-typescript";
-import { ApiKeyModel, UserModel } from "../dal/dbModels/dbmodels";
+import { ApiKeyModel, UserModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, ApiKeyStatus, Permissions } from "../data/models/dto";
-import { AppSettings } from "../helpers/appSettings";
+import { AppSettings, AppSettingsProvider } from "../helpers/appSettings";
+import ApiKeyValidator from "./validators/apiKeyValidator";
 
-export interface IApiKeyService {
-
-}
-
-export class ApiKeyService implements IApiKeyService {
-    //TODO: before ctor or after fields
+export default class ApiKeyService {
     private static readonly _salt: number = 10;
 
-    constructor(private appSettings: AppSettings) {
-
+    constructor(private appSettings: AppSettings, private apiKeyValidator: ApiKeyValidator) {
     }
 
-    //TODO: put validation in another file split to function
-    public async generateApiKey(userId: number, requiredPermissions: Permissions): Promise<string | null> {
-
-        //todo: validateUserExist
-        this.validateKeyGeneration(userId, requiredPermissions);
+    async generateApiKey(userId: number, requiredPermissions: Permissions): Promise<string | null> {
+        //since we "passed" auth we assume what user exist 
+        let userKeys = await this.getApiKeysFromDb(userId);
+        let userPermissions = await UserModel.findOne({ where: { userId: userId } });
+        let isValidForGenerate = this.apiKeyValidator.isUserValidForIssuingKey(requiredPermissions, userPermissions.permissions, userKeys);
+        if (!isValidForGenerate[0]) {
+            throw new Error(isValidForGenerate[1]);
+        }
         return await this.createKey(userId, requiredPermissions).then(res => resolve(res.token));
     }
 
@@ -43,78 +40,49 @@ export class ApiKeyService implements IApiKeyService {
     }
 
     //could be overhead for often call, consider encryption over hash
-    private async getApiKeyFromDb(userId: number, apiKey: string): Promise<ApiKey | null> {
+    private async getApiKeyFromDb(apiKey: string): Promise<ApiKey | null> {
         let encryptedKey = await bcrypt.hash(apiKey, ApiKeyService._salt);
-        //INJECT
-        await ApiKeyModel.findOne()
-        //consider repo and move method out
-        let result = await ApiKeyModel.findOne();
-        /*{findall
-            where: { token === encryptedKey
-        });*/
-        return result;
+        return await ApiKeyModel.findOne({ where: { token: encryptedKey } });
     }
 
     private async getApiKeysFromDb(userId: number): Promise<ApiKey[] | null> {
-        return await ApiKeyModel.findAll();
-    }
-
-    private async validateKeyGeneration(userId: number, requiredPermissions: Permissions): Promise<boolean> {
-        //inject method
-        let existingApis = await this.getApiKeysFromDb(userId);
-        //TODO: VALID?
-        if (!existingApis.length) {
-            return new Promise(resolve => resolve(true));
-        }
-        //TODO: == or ===        
-        let sameKeyExist = existingApis.find(x => x.status === ApiKeyStatus.Revoked && x.permissions === requiredPermissions);
-        if (sameKeyExist) {
-            throw ("cannot genenerate api key, reason the key with required permissions already exists ");
-        }
-        //get user permission from db
-        let userPermissions: Permissions = Permissions.Create;
-        //TODO: HOW TO BETTER THROW or return we cannot know about http error or return bool + message
-        if (requiredPermissions > userPermissions) {
-            throw ("baaad permissions");
-        }
-        //how better
-        return new Promise(resolve => resolve(true));
+        return await ApiKeyModel.findAll({ where: { userId: userId } });
     }
 
     //#endregion
 
-    public async getApiKey(userId: number, token: string): Promise<ApiKey | null> {
-    //check if token belongs to user
-    return await ApiKeyModel.findOne();
+    async getApiKey(userId: number, token: string): Promise<ApiKey | null> {
+        return await this.getApiKeyFromDb(token);
     }
 
-    //decouple move to apikeyvalidator
-    public async validateExistingKey(userId: number, apiKey: string): Promise<boolean> {
-        //put db out
-        let validKey = await this.getApiKeyFromDb(userId, apiKey);
+    async revoke(userId: number, apiKey: string) {
+        let encryptedKey = await bcrypt.hash(apiKey, ApiKeyService._salt);
+        let result = await ApiKeyModel.findOne({ where: { token: encryptedKey }, include: UserModel });
 
-        //todo: how better
-        if (validKey === null || validKey.status !== ApiKeyStatus.Active) {
-            return false;
+        if (!result) {
+            throw new Error("KeyNotFound");
         }
-
-        //check if api key per user
-        if (this.appSettings.apiKeyValidOnlyForIssuer && userId != validKey.userId) {
-            throw ("AYAYAYA");
+        if (result.user.id !== userId) {
+            throw new Error("Unauthorised");
         }
-
-        return true;
+        await ApiKeyModel.destroy(result.id);
     }
 
-    public async revoke(userId: number, key: string) {
-        //check if key belongs to user
-        //go to db delete key
-        //add hash
-        let apiKey = await ApiKeyModel./*include*/findOne();
-        if (apiKey.user.id !== userId) {
-            //throw unathorized (only user can delete key)
-            //customize behavior by settings future improv
+    async validateExistingKeyByTokenString(userId: number, apiKey: string): Promise<[boolean, string]> {
+        let validKey = await this.getApiKeyFromDb(apiKey);
+        return this.validateExistingKey(userId, validKey);
+    }
+
+    async validateExistingKey(userId: number, validKey: ApiKey): Promise<[boolean, string]> {
+
+        if (!validKey || validKey.status !== ApiKeyStatus.Active) {
+            return [false, 'outdated key'];
         }
-        await ApiKeyModel.destroy(apiKey.id);
+
+        if (this.apiKeyValidator.isKeyOnlyForIssuer) {
+            return [false, 'key can be only used by issuer'];
+        }
+
+        return [true, ''];
     }
 }

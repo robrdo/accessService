@@ -74,7 +74,7 @@ export class TokenHistoryModel extends Model implements TokenHistory {
     @Column
     lastUpdate: Date
     @BelongsTo(() => ApiKeyModel)
-    user: ApiKey
+    apiKey: ApiKey
 }
 
 /**

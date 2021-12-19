@@ -1,14 +1,14 @@
 import express, { Request, Response, Express, NextFunction } from "express";
-import { ApiKeyService } from "../businessLayer/apiKeyService";
-import { TokenService } from "../businessLayer/tokenService";
-import { Permissions } from "../data/models/dto";
-import { Controller } from "../infra/controller";
-import { deleteApi } from "../infra/routeDecorators/deleteDecorator";
-import { getApi } from "../infra/routeDecorators/getDecorator";
-import { postApi } from "../infra/routeDecorators/postDecorator";
-import HttpException from "../serviceLayer/exceptions/httpException";
+import ApiKeyService from "../../businessLayer/apiKeyService";
+import TokenService from "../../businessLayer/tokenService";
+import { Permissions } from "../../data/models/dto";
+import { Controller } from "../../infra/controller";
+import { deleteApi } from "../../infra/routeDecorators/deleteDecorator";
+import { getApi } from "../../infra/routeDecorators/getDecorator";
+import { postApi } from "../../infra/routeDecorators/postDecorator";
+import HttpException from "../exceptions/httpException";
 
-export class AccessServiceController extends Controller {
+export default class AccessServiceController extends Controller {
 
   constructor(private apiKeyService: ApiKeyService,
     private tokenService: TokenService) {
@@ -18,7 +18,7 @@ export class AccessServiceController extends Controller {
 
   //post
   @postApi('')
-  public async createAPIkey(request: Request, response: Response): Promise<void> {
+  async createAPIkey(request: Request, response: Response): Promise<void> {
     //get userid from request
     let userId = 1;
     //validate permissions
@@ -36,7 +36,7 @@ export class AccessServiceController extends Controller {
   //post/authentithicate
   @postApi('/authentithicate')
   //@jwtAuth
-  public async useAPIKey(request: Request, response: Response) {
+  async useAPIKey(request: Request, response: Response, next: NextFunction) {
     let userId: number = Number(request.params.userId);
     //add validate if (id) undefined
     //get token from request
@@ -44,15 +44,17 @@ export class AccessServiceController extends Controller {
     //put into bl //todo should i call it bl
     //?? vs ||
     let apiKey = await this.apiKeyService.getApiKey(userId, paramKey);
-    await this.apiKeyService.validateExistingKey(userId, apiKey.token);
+    if (!await this.apiKeyService.validateExistingKey(userId, apiKey)) {
+      next("ivalid ApiKey");
+    }
     //into object
-    return await this.tokenService.generateToken(userId, apiKey.permissions).then(resolve => resolve);
+    return await this.tokenService.generateToken(userId, apiKey.id, apiKey.permissions);
     //response.send();
   }
 
   //DELETE /{:id}
   @deleteApi('/{:id}')
-  public async revokeAPIKey(request: Request, response: Response) {
+  async revokeAPIKey(request: Request, response: Response) {
     //WHICH ID? 
     let id = request.params.id;
     let userId = Number(request.params.userId);//validate
@@ -61,7 +63,7 @@ export class AccessServiceController extends Controller {
   }
 
   @getApi('tokens')
-  public async getTokens(request: Request, response: Response, next: NextFunction) {
+  async getTokens(request: Request, response: Response, next: NextFunction) {
     //SHOULD I TRANSFORM TO RESPONSE FORMAT HERE?
     return await this.tokenService.getTokensHistory().
       then((tokens) => {
@@ -78,7 +80,7 @@ export class AccessServiceController extends Controller {
 
   //#region routing
 
-  public expressRouter = express.Router();
+  expressRouter = express.Router();
   private _path: string = '/accessService';
 
   private setRoutes() {

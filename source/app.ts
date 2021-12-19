@@ -1,19 +1,21 @@
 import express, { Application, Express } from 'express';
 import * as bodyParser from 'body-parser';
-import { PlainAuthentithication } from './services/authService';
-import { AccessServiceController } from './controllers/accessServiceController';
+import { PlainAuthentithication } from './commonServices/authService';
+import AccessServiceController from './serverLayer/controllers/accessServiceController';
 import { TokenService } from './businessLayer/tokenService';
-import { JWTService } from './services/jwtService';
-import { ApiKeyService } from './businessLayer/apiKeyService';
-import { AppSettings } from "./helpers/appSettings";
-import errorMiddleware from './serviceLayer/middleWare/errorMiddleware';
+import JWTService from './commonServices/jwtService';
+import ApiKeyService from './businessLayer/apiKeyService';
+import { AppSettings, AppSettingsProvider } from "./helpers/appSettings";
+import errorMiddleware from './serverLayer/middleWare/errorMiddleware';
+import DbProvider from './dataAccessLayer/dbProvider';
+import { resolve } from 'path/posix';
 //import { injectable } from 'tsyringe';
 
 //@scoped (Lifecycle.ContainerScoped)
 //@injectable()
 class App {
-    public app: Application;
-    public port: number;
+    app: Application;
+    port: number;
 
     constructor() {
         this.app = express();
@@ -50,10 +52,17 @@ class App {
     //temp
     private createMainController(): AccessServiceController {
         //temp
-        let jwtService = new JWTService();
-        //todo 
-        let settings = null;//new AppSettings();
-        let ctrl = new AccessServiceController(new ApiKeyService(settings), new TokenService(jwtService));
+        let db = new DbProvider(); // factory
+        new Promise(db.initialize).then(() => console.log("initin"));
+        let settings: AppSettings = null;
+        AppSettingsProvider.GetInstance(db).then(value => settings = value);
+        console.log("ops");
+        let jwtTokenService = new JWTService(settings);
+        let apiKeyService = new ApiKeyService(settings);
+        let ctrl = new AccessServiceController(apiKeyService, new TokenService(jwtTokenService));
+        console.log('AHTUNG!, before method');
+        /*ctrl.getTokens(null, null);
+        ctrl.getTokens(null, null);*/
         return ctrl;
     }
 }

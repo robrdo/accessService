@@ -1,11 +1,11 @@
 import { ApplicationSettings } from "../data/models/dto";
 import 'dotenv/config';
-import { DbProvider } from "../dal/dbProvider";
+import DbProvider from "../dataAccessLayer/dbProvider";
 
+//decorates appconfig from different sources
 export interface AppSettings {
     readonly jwtSecret: string
     readonly apiKeyValidOnlyForIssuer: boolean
-    readonly dbPath: string
 }
 
 export class AppSettingsProvider implements AppSettings {
@@ -14,21 +14,21 @@ export class AppSettingsProvider implements AppSettings {
 
     private static _instance: AppSettingsProvider
 
-    static async GetInstance(dbProvider: DbProvider): Promise<AppSettingsProvider> {
+    static async GetInstance(dbProvider: DbProvider): Promise<AppSettings> {
         if (!dbProvider.isInit()) {
             throw new Error("not init");
         }
         let dbSettings = await this.getSettingsFromDb();
         let envSettings = process.env;
-        return this._instance ?? new AppSettingsProvider(dbSettings.apiKeyValidOnlyForIssuer, envSettings.DB_PATH ?? "", envSettings.JWT_SECRET);//TODO: BETEER WAY?
+        return this._instance ?? new AppSettingsProvider(dbSettings.apiKeyValidOnlyForIssuer, envSettings.JWT_SECRET);
     }
 
     //#endregion
 
-    private constructor(apiKeyValidOnlyForIssuer: boolean, dbPath: string, jwt: string) {
+    private constructor(apiKeyValidOnlyForIssuer: boolean, jwt: string) {
+        //throw
         this.jwtSecret = jwt;
         this.apiKeyValidOnlyForIssuer = apiKeyValidOnlyForIssuer;
-        this.dbPath = dbPath;
     }
 
     readonly dbPath: string;
@@ -41,9 +41,5 @@ export class AppSettingsProvider implements AppSettings {
             apiKeyValidOnlyForIssuer: false
         };
         return app;
-    }
-
-    private getSettingsFromEnv() {
-
     }
 }

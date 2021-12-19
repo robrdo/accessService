@@ -1,50 +1,44 @@
-export interface ITokenService {
-    getTokensHistory(): Promise<TokensResponse[]>
-}
-
-import { TokenHistoryModel } from "../dal/dbModels/dbmodels";
-import { Permissions, TokenHistory } from "../data/models/dto";
-import { TokensResponse } from "../responseModels/tokensResponse";
-import { JWTService } from "../services/jwtService";
+import { TokenHistoryModel } from "../dataAccessLayer/dbModels/dbmodels";
+import { ApiKey, Permissions, TokenHistory } from "../data/models/dto";
+import { TokensResponse } from "../data/responseModels/tokensResponse";
+import JWTService from "../commonServices/jwtService";
 
 //rename to bl
-export class TokenService implements ITokenService {
+export default class TokenService {
 
     constructor(private jwtService: JWTService) {
 
     }
 
-    async generateToken(userId: number, requiredPermissions : Permissions): Promise<string> {
+    async generateToken(userId: number, apiKeyId: number, requiredPermissions: Permissions): Promise<string> {
         let token = await this.jwtService.generateToken(userId, requiredPermissions);
-        //put in db
+        new TokenHistoryModel({
+            token: token,
+            relatedApiKeyId: apiKeyId,
+            requiredPermissions: requiredPermissions,
+            lastUpdate: Date.now()
+        });
+        //update apiKeyUsage table
         return token;
     }
 
-    /*private async updateUsage(userId: number): Promise<string> {
-
-    }*/
-
-    //TODO: should I use any or response for every shit
     async getTokensHistory(): Promise<TokensResponse[]> {
-        //getfromdb
         let tokens: TokenHistory[] = await TokenHistoryModel.findAll();
-
-        //TODO: SHOULD I WRAP with async when await is not here
         let result = tokens.map(t => {
-            //TODO : is this a better way to write it
-            return <TokensResponse>{
-                token: this.obstructToken(t.token ?? ""),
-                lastUpdateDate: t.lastUpdate,
-                status: this.getStatusOfToken(t.token ?? "")
+            if (t.token) {
+                return <TokensResponse>{
+                    token: this.obstructToken(t.token),
+                    lastUpdateDate: t.lastUpdate,
+                    status: this.getStatusOfToken(t.token)
+                }
             };
         });
         return new Promise<TokensResponse[]>(resolve => resolve(result));
     }
 
-    //#region  methods
+    //#region methods
 
     private obstructToken(token: string): string {
-        //TODO: how to design
         return "***" + token.substring(token.length - 4);
     }
 
