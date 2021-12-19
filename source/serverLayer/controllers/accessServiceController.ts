@@ -8,14 +8,13 @@ import { deleteApi } from "../../infra/routing/routeDecorators/deleteDecorator";
 import { getApi } from "../../infra/routing/routeDecorators/getDecorator";
 import { postApi } from "../../infra/routing/routeDecorators/postDecorator";
 import HttpException from "../exceptions/httpException";
-import { get } from "http";
 
-@autoInjectable()
+@injectable()
 export default class AccessServiceController {
 
   constructor(private apiKeyService: ApiKeyService,
     private tokenService: TokenService) {
-    console.log('ctrl ctor');
+
   }
 
   @getApi('health')
@@ -30,7 +29,7 @@ export default class AccessServiceController {
   //post
   @postApi('')
   async createAPIkey(request: Request, response: Response): Promise<void> {
-    let userId = Number(request.params.userId);
+    let userId = Number(request.headers.userId);
     //validate permissions
     let permParam = request.body.permissions;
     console.log("permParam");
@@ -42,15 +41,19 @@ export default class AccessServiceController {
       let index:any = Permissions[<any>element];
       requiredPermission |=  Permissions[<any>index];
     });*/
-    await this.apiKeyService.generateApiKey(userId, requiredPermission);
-    response.send();
+    console.log('checkservice' + this.apiKeyService);
+    let apiKey = await this.apiKeyService.generateApiKey(userId, requiredPermission);
+    response.send({
+      apikey: apiKey
+    });
   }
 
   //post/authentithicate
   @postApi('/authentithicate')
   //@jwtAuth
   async useAPIKey(request: Request, response: Response, next: NextFunction) {
-    let userId: number = Number(request.params.userId);
+    let userId: number = Number(request.headers.userId);
+    let apirKey: number = Number(request.headers.apikey);
     //add validate if (id) undefined
     //get token from request
     let paramKey: string = "ddf";

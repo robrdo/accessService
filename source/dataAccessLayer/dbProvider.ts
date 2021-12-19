@@ -12,6 +12,7 @@ export default class DbProvider implements Initializable {
 
   constructor() {
     let envSettings = process.env;
+    console.log('env ', envSettings.STORAGE);
     this._sequelize = new Sequelize({
       dialect: 'sqlite',
       storage: envSettings.STORAGE,
@@ -30,7 +31,6 @@ export default class DbProvider implements Initializable {
     await this.checkConnection();
     await this.populateDb();
     this._wasInit = true;
-    console.log('wasint ' + this._wasInit);
     return new Promise(resolve => resolve(this._wasInit));
   }
 
@@ -57,7 +57,7 @@ export default class DbProvider implements Initializable {
     let plainPasword = await bcrypt.hash('plainPasword', 10);
 
     let user = new UserModel({
-      id: 789,
+      id: 777,
       firstName: 'User',
       lastName: 'Userovich',
       email: 'user@user.com',
@@ -66,9 +66,6 @@ export default class DbProvider implements Initializable {
     });
 
     await Promise.all([user.save(), settings.save()]);
-    let g = await UserModel.findOne();
-    console.log('!!settings!!');
-    console.log(JSON.stringify(g));
   }
 }
 

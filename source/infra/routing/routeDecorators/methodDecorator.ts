@@ -3,6 +3,7 @@ import { ROUTES } from '../routingConstants';
 import { RouteDescriptor, RouteTypes } from '../routingTypes';
 
 export function decorateRoute(routeType: RouteTypes, path: string, target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    path = transformPath(path);
     let array = Reflect.getOwnMetadata(ROUTES, target) || [];
     let routeDescriptor: RouteDescriptor = {
         method: routeType,
@@ -11,6 +12,14 @@ export function decorateRoute(routeType: RouteTypes, path: string, target: any, 
     }
     array.push(routeDescriptor);
     Reflect.defineMetadata(ROUTES, array, target);
-    console.log('AHTUNG! RD - ' + JSON.stringify(routeDescriptor));
-    console.log('AHTUNG! ARRAY - ' + JSON.stringify(routeDescriptor));
+}
+
+function transformPath(path: string): string {
+    if (!path) {
+        path = '';
+    }
+    if (path.startsWith('/')) {
+        path = path.substring(1);
+    }
+    return path;
 }

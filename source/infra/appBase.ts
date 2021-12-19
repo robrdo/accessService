@@ -21,7 +21,7 @@ export default abstract class AppBase {
         });
     }
 
-    registerController<T>(controllerType: InjectionToken<T>, serviceName:string) {
+    registerController<T>(controllerType: InjectionToken<T>, serviceName: string) {
         let controller = container.resolve(controllerType);
         this.buildRouting(controller, serviceName);
     };
@@ -39,44 +39,38 @@ export default abstract class AppBase {
      * @param serviceName 
      * @returns 
      */
-    private buildRouting(controller: Object, serviceName:string) {
-        let name = controller.constructor.name;
-        let path = Reflect.getMetadata(CONTROLLERPATH, controller);
-        if (!path) {
-            console.error("no metadata presents on " + typeof controller);
-            console.error("no metadata presents on " + name);
+    private buildRouting(controller: Object, serviceName: string) {
+        let methods = Reflect.getMetadata(ROUTES, controller);
+        let casted = methods as RouteDescriptor[];
+        if (!methods || !casted) {
+            //logger.log("cannot init routes for controllers")
+            return;
         }
 
-        let methods = Reflect.getMetadata(ROUTES, controller);
-        console.log("methods");
-        if (!methods)
-            return;
-        console.log(JSON.stringify(methods));
-        let casted = methods as RouteDescriptor[];
-        console.log(casted);
 
-        (methods as []).forEach(element => {
+        console.log(`controller ${serviceName} has started routes: \n ${JSON.stringify(casted)}`);
+
+        casted.forEach(element => {
             let rdesc = element as RouteDescriptor;
-            console.log("casted2", JSON.stringify(rdesc));
 
             switch (rdesc.method) {
                 case RouteTypes.Get:
-                    this.app.get(name + "/" + rdesc.route, rdesc.methodInvocation)
+                    this.app.get(`/${serviceName}/${rdesc.route}`, rdesc.methodInvocation)
                     break;
                 case RouteTypes.Delete:
-                    this.app.delete(name +"/" + rdesc.route, rdesc.methodInvocation)
+                    this.app.delete(`/${serviceName}/${rdesc.route}`, rdesc.methodInvocation)
                     break;
                 case RouteTypes.Post:
-                    this.app.post(name + "/" + rdesc.route, rdesc.methodInvocation)
+                    this.app.post(`/${serviceName}/${rdesc.route}`, rdesc.methodInvocation)
                     break;
                 case RouteTypes.Put:
-                    this.app.put(name + "/" + rdesc.route, rdesc.methodInvocation)
+                    this.app.put(`/${serviceName}/${rdesc.route}`, rdesc.methodInvocation)
                     break;
                 default:
                     break;
             }
         });
-        
+
         Reflect.deleteMetadata(ROUTES, controller);
 
         //#endregion

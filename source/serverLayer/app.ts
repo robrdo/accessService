@@ -42,6 +42,7 @@ export class AccessServiceApp extends AppBase {
 
     private initializeControllers() {
         this.registerController(AccessServiceController, 'accessService');
+        console.log(this.app._router.stack.filter(r => r.route).map(r => r.route.path))
     }
 }
 
