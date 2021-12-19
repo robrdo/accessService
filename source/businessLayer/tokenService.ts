@@ -1,6 +1,7 @@
+import "reflect-metadata";
 import { TokenHistoryModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, Permissions, TokenHistory } from "../data/models/dto";
-import { TokensResponse } from "../data/responseModels/tokensResponse";
+import TokensResponse from "../data/responseModels/tokensResponse";
 import JWTService from "../commonServices/jwtService";
 import { singleton } from "tsyringe";
 

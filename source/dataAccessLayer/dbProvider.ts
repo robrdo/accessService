@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Sequelize } from 'sequelize-typescript'
 import { Permissions } from '../data/models/dto';
 import { ApiKeyModel, ApplicationSettingsModel, TokenHistoryModel, UserModel } from './dbModels/dbmodels';
@@ -5,43 +6,32 @@ import bcrypt, { } from 'bcrypt';
 import { Initializable } from '../infra/initializable';
 //import { requireInitialize } from "../infra/Initializable";
 
-//singleton - put isinit check
-
 export default class DbProvider implements Initializable {
   private readonly _sequelize: Sequelize
   private _wasInit: boolean = false;
 
   constructor() {
-    //TODO: get from env
     let envSettings = process.env;
-
     this._sequelize = new Sequelize({
       dialect: 'sqlite',
       storage: envSettings.STORAGE,
       models: [UserModel, ApiKeyModel, TokenHistoryModel, ApplicationSettingsModel]
     });
-
-    //this._sequelize.addModels([ApplicationSettingsModel]);
-    // [__dirname + '/models'] // or [Player, Team],
-
     //this._sequelize.getRepository
-
-    //this.sequelize = new Sequelize('sqlite::memory:');
   }
   isInit(): boolean {
     return this._wasInit;
   }
 
-  //todo: turn into injection singleton!
-
-  async initialize(): Promise<void> {
+  async initialize(): Promise<boolean> {
     if (this._wasInit) {
-      return
+      return new Promise(resolve => resolve(this._wasInit));
     }
-    //todo exception handling
     await this.checkConnection();
     await this.populateDb();
     this._wasInit = true;
+    console.log('wasint ' + this._wasInit);
+    return new Promise(resolve => resolve(this._wasInit));
   }
 
   //@requireInitialize
@@ -52,8 +42,7 @@ export default class DbProvider implements Initializable {
       console.log('Connection has been established successfully.');
     } catch (error) {
       console.error('Unable to connect to the database:', error);
-      throw new Error("ddddddddd");
-      //TODO: STOP THE APP
+      throw new Error("Unable to connect to the database");
     }
   }
 

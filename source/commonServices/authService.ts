@@ -1,12 +1,12 @@
 import express, { Express } from 'express';
 
+//we need class in case real usage we would imject some service
 export default class PlainAuthentithication {
-    async authenticateRequest(request: express.Request, response: express.Response, next: any) {
-        let req = await request.body;
-
-        //todo: fix that
-        if (req.UserId == undefined) {
-            return response.send(401);
+    authenticateRequest(request: express.Request, response: express.Response, next: any) {
+        let userId = request.headers.userid;
+        console.log(JSON.stringify(request.headers));
+        if (!userId) {
+            return response.sendStatus(401);
         }
         next();
     }

@@ -1,7 +1,8 @@
-import { AppSettings } from "../helpers/appSettings";
+import "reflect-metadata";
+import { AppSettings } from "./helpers/appSettings";
 import jwt, { } from "jsonwebtoken";
 import { Permissions } from "../data/models/dto";
-import { singleton } from "tsyringe";
+import { inject, singleton } from "tsyringe";
 
 @singleton()
 export default class JWTService {

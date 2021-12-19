@@ -1,21 +1,30 @@
+import "reflect-metadata";
 import express, { Request, Response, Express, NextFunction } from "express";
 import { autoInjectable, injectable, singleton } from "tsyringe";
 import ApiKeyService from "../../businessLayer/apiKeyService";
 import TokenService from "../../businessLayer/tokenService";
 import { Permissions } from "../../data/models/dto";
-import { Controller } from "../../infra/controller";
-import { deleteApi } from "../../infra/routeDecorators/deleteDecorator";
-import { getApi } from "../../infra/routeDecorators/getDecorator";
-import { postApi } from "../../infra/routeDecorators/postDecorator";
+import { deleteApi } from "../../infra/routing/routeDecorators/deleteDecorator";
+import { getApi } from "../../infra/routing/routeDecorators/getDecorator";
+import { postApi } from "../../infra/routing/routeDecorators/postDecorator";
 import HttpException from "../exceptions/httpException";
+import { get } from "http";
 
 @autoInjectable()
-export default class AccessServiceController extends Controller {
+export default class AccessServiceController {
 
   constructor(private apiKeyService: ApiKeyService,
     private tokenService: TokenService) {
-    super();
     console.log('ctrl ctor');
+  }
+
+  @getApi('health')
+  healthCheck(request: Request, response: Response) {
+    response.send(
+      {
+        yeahbaby: 'mafucka'
+      }
+    );
   }
 
   //post
@@ -79,21 +88,6 @@ export default class AccessServiceController extends Controller {
       });
 
   }
-
-  //#region routing
-
-  expressRouter = express.Router();
-  private _path: string = '/accessService';
-
-  private setRoutes() {
-    this.expressRouter.get(this._path, this.getTokens);
-    this.expressRouter.post(this._path, this.createAPIkey);
-    this.expressRouter.post(this._path + '/authentithicate', this.createAPIkey);
-    this.expressRouter.delete(this._path + '/{:id}', this.createAPIkey);
-  }
-
-  //#endregion
-
 }
 
 /*

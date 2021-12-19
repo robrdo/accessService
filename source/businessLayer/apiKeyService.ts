@@ -1,9 +1,9 @@
+import "reflect-metadata";
 import bcrypt, { hash, compare } from "bcrypt";
 import apiKeygenerator, { } from 'generate-api-key';
 import { resolve } from "path/posix";
 import { ApiKeyModel, UserModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, ApiKeyStatus, Permissions } from "../data/models/dto";
-import { AppSettings, AppSettingsProvider } from "../helpers/appSettings";
 import ApiKeyValidator from "./validators/apiKeyValidator";
 import { singleton } from "tsyringe";
 
@@ -11,7 +11,7 @@ import { singleton } from "tsyringe";
 export default class ApiKeyService {
     private static readonly _salt: number = 10;
 
-    constructor(private appSettings: AppSettings, private apiKeyValidator: ApiKeyValidator) {
+    constructor(private apiKeyValidator: ApiKeyValidator) {
     }
 
     async generateApiKey(userId: number, requiredPermissions: Permissions): Promise<string | null> {

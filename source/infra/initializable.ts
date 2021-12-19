@@ -1,7 +1,7 @@
 
 export interface Initializable {
     isInit(): boolean;
-    initialize(): Promise<void>;
+    initialize(): Promise<boolean>;
 }
 
 export function requireInitialize() {

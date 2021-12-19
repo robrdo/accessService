@@ -1,6 +1,7 @@
-import { singleton } from "tsyringe";
+import "reflect-metadata";
+import { inject, singleton } from "tsyringe";
 import { ApiKeyStatus, ApiKey, Permissions } from "../../data/models/dto";
-import { AppSettings } from "../../helpers/appSettings";
+import { AppSettings } from "../../commonServices/helpers/appSettings";
 
 @singleton()
 export default class ApiKeyValidator {
