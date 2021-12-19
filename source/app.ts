@@ -1,24 +1,25 @@
 import express, { Application, Express } from 'express';
 import * as bodyParser from 'body-parser';
-import { PlainAuthentithication } from './commonServices/authService';
+import PlainAuthentithication from './commonServices/authService';
 import AccessServiceController from './serverLayer/controllers/accessServiceController';
-import { TokenService } from './businessLayer/tokenService';
 import JWTService from './commonServices/jwtService';
 import ApiKeyService from './businessLayer/apiKeyService';
 import { AppSettings, AppSettingsProvider } from "./helpers/appSettings";
 import errorMiddleware from './serverLayer/middleWare/errorMiddleware';
 import DbProvider from './dataAccessLayer/dbProvider';
 import { resolve } from 'path/posix';
+import { container } from 'tsyringe';
 //import { injectable } from 'tsyringe';
 
 //@scoped (Lifecycle.ContainerScoped)
 //@injectable()
-class App {
+export default class Server {
     app: Application;
     port: number;
 
     constructor() {
         this.app = express();
+        DiRegistration.registerDependencise();
         this.initializeMiddlewares();
         let ctrl: AccessServiceController = this.createMainController();
         this.initializeControllers(ctrl);
@@ -52,7 +53,7 @@ class App {
     //temp
     private createMainController(): AccessServiceController {
         //temp
-        let db = new DbProvider(); // factory
+        /*let db = new DbProvider(); // factory
         new Promise(db.initialize).then(() => console.log("initin"));
         let settings: AppSettings = null;
         AppSettingsProvider.GetInstance(db).then(value => settings = value);
@@ -60,16 +61,12 @@ class App {
         let jwtTokenService = new JWTService(settings);
         let apiKeyService = new ApiKeyService(settings);
         let ctrl = new AccessServiceController(apiKeyService, new TokenService(jwtTokenService));
-        console.log('AHTUNG!, before method');
+       */// console.log('AHTUNG!, before method');
         /*ctrl.getTokens(null, null);
         ctrl.getTokens(null, null);*/
-        return ctrl;
+        return container.resolve(AccessServiceController);
     }
 }
-
-export default App;
-
-
 
 /*var ctrl = new Controller();
 const route = router.get('/', ctrl.getAll);*/
@@ -105,3 +102,12 @@ router.use((req, res, next) => {
     });
 });*/
 
+
+class DiRegistration {
+    static registerDependencise() {
+        let db = new DbProvider();
+        let appSettings = AppSettingsProvider.GetInstance(db);
+        container.registerInstance('DbProvider', db);
+        container.registerInstance('AppSettings', appSettings);
+    }
+}

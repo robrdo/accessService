@@ -2,8 +2,9 @@ import { TokenHistoryModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, Permissions, TokenHistory } from "../data/models/dto";
 import { TokensResponse } from "../data/responseModels/tokensResponse";
 import JWTService from "../commonServices/jwtService";
+import { singleton } from "tsyringe";
 
-//rename to bl
+@singleton()
 export default class TokenService {
 
     constructor(private jwtService: JWTService) {

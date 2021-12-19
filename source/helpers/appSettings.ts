@@ -1,6 +1,7 @@
 import { ApplicationSettings } from "../data/models/dto";
 import 'dotenv/config';
 import DbProvider from "../dataAccessLayer/dbProvider";
+import { container } from "tsyringe";
 
 //decorates appconfig from different sources
 export interface AppSettings {

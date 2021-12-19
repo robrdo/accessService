@@ -1,7 +1,7 @@
 import JWTService, {  } from "../../commonServices/jwtService";
 import express, { Express } from 'express';
 
-export class JwtMiddleware {
+export default class JwtMiddleware {
   constructor(private jwtService: JWTService) { }
 
   verifyToken (request: express.Request, response: express.Response, next: any) {

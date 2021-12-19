@@ -1,4 +1,3 @@
-import { OperationCanceledException } from "typescript"
 
 export interface Initializable {
     isInit(): boolean;

@@ -5,7 +5,9 @@ import { ApiKeyModel, UserModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, ApiKeyStatus, Permissions } from "../data/models/dto";
 import { AppSettings, AppSettingsProvider } from "../helpers/appSettings";
 import ApiKeyValidator from "./validators/apiKeyValidator";
+import { singleton } from "tsyringe";
 
+@singleton()
 export default class ApiKeyService {
     private static readonly _salt: number = 10;
 

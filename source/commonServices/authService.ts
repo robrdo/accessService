@@ -1,6 +1,6 @@
 import express, { Express } from 'express';
 
-export class PlainAuthentithication {
+export default class PlainAuthentithication {
     async authenticateRequest(request: express.Request, response: express.Response, next: any) {
         let req = await request.body;
 

@@ -1,10 +1,12 @@
+import { singleton } from "tsyringe";
 import { ApiKeyStatus, ApiKey, Permissions } from "../../data/models/dto";
 import { AppSettings } from "../../helpers/appSettings";
 
-//@singlton
+@singleton()
 export default class ApiKeyValidator {
 
     constructor(private appSettings: AppSettings) {
+        
     }
 
     isKeyOnlyForIssuer(requestedUserId: number, issuerUserId: Number) {

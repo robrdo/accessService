@@ -1,12 +1,13 @@
 import { AppSettings } from "../helpers/appSettings";
 import jwt, { } from "jsonwebtoken";
 import { Permissions } from "../data/models/dto";
+import { singleton } from "tsyringe";
 
+@singleton()
 export default class JWTService {
     constructor(private appSettings: AppSettings) {
     }
-
-    //@singleton
+    
     async generateToken(userId: number, requiredPermissions: Permissions): Promise<string> {
         let permissions = Object.values(Permissions).filter(value => typeof value === 'string')
         let token = await jwt.sign(

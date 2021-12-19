@@ -1,4 +1,5 @@
 import express, { Request, Response, Express, NextFunction } from "express";
+import { autoInjectable, injectable, singleton } from "tsyringe";
 import ApiKeyService from "../../businessLayer/apiKeyService";
 import TokenService from "../../businessLayer/tokenService";
 import { Permissions } from "../../data/models/dto";
@@ -8,12 +9,13 @@ import { getApi } from "../../infra/routeDecorators/getDecorator";
 import { postApi } from "../../infra/routeDecorators/postDecorator";
 import HttpException from "../exceptions/httpException";
 
+@autoInjectable()
 export default class AccessServiceController extends Controller {
 
   constructor(private apiKeyService: ApiKeyService,
     private tokenService: TokenService) {
     super();
-    console.log('ctor');
+    console.log('ctrl ctor');
   }
 
   //post

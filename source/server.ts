@@ -1,7 +1,7 @@
 /** source/server.ts */
 import express, { Express } from 'express';
-import App from './app';
+import Server from './app';
 
-const app = new App();
+const app = new Server();
 const PORT: any = process.env.PORT ?? 6060;
 app.start(PORT);
