@@ -1,11 +1,12 @@
 import "reflect-metadata";
 import bcrypt, { hash, compare } from "bcrypt";
-import apiKeygenerator, { } from 'generate-api-key';
+//import apiKeygenerator, { } from 'generate-api-key';
 import { resolve } from "path/posix";
 import { ApiKeyModel, UserModel } from "../dataAccessLayer/dbModels/dbmodels";
 import { ApiKey, ApiKeyStatus, Permissions } from "../data/models/dto";
 import ApiKeyValidator from "./validators/apiKeyValidator";
 import { singleton } from "tsyringe";
+import generateApiKey from 'generate-api-key';
 
 @singleton()
 export default class ApiKeyService {
@@ -16,8 +17,8 @@ export default class ApiKeyService {
 
     async generateApiKey(userId: number, requiredPermissions: Permissions): Promise<string | null> {
         //since we "passed" auth we assume what user exist 
-        let userKeys = await this.getApiKeysFromDb(userId);
-        let userPermissions = await UserModel.findOne({ where: { userId: userId } });
+        let userKeys = await this.getApiKeysByUserFromDb(userId);
+        let userPermissions = await UserModel.findOne({ where: { id: userId } });
         let isValidForGenerate = this.apiKeyValidator.isUserValidForIssuingKey(requiredPermissions, userPermissions.permissions, userKeys);
         if (!isValidForGenerate[0]) {
             throw new Error(isValidForGenerate[1]);
@@ -28,17 +29,19 @@ export default class ApiKeyService {
     //#region apiKeyGeneration
 
     private async createKey(userId: number, requiredPermissions: Permissions): Promise<ApiKey | null> {
-        let key: string = apiKeygenerator.generateApiKey();
+        
+        let key: string = "fgffg-dfgdfgdf-dfgdfg-dfg";//generateApiKey.generateApiKey();//apiKeygenerator.generateApiKey();
         console.log('AHTUNG, generated code ' + key);
         let model = new ApiKeyModel({
             userId: userId,
             status: ApiKeyStatus.Active,
             requiredPermissions: requiredPermissions
         })
+        //TODO: WHY WEIRD GEN
         return await bcrypt.hash(key, ApiKeyService._salt).then(async value => {
             model.token = value
             return await model.save();
-        }).then((resolve) => resolve);
+        })
     }
 
     //could be overhead for often call, consider encryption over hash
@@ -47,7 +50,8 @@ export default class ApiKeyService {
         return await ApiKeyModel.findOne({ where: { token: encryptedKey } });
     }
 
-    private async getApiKeysFromDb(userId: number): Promise<ApiKey[] | null> {
+    //move to repo
+    private async getApiKeysByUserFromDb(userId: number): Promise<ApiKey[] | null> {
         return await ApiKeyModel.findAll({ where: { userId: userId } });
     }
 

@@ -1,7 +1,6 @@
-/** source/server.ts */
-import express, { Express } from 'express';
 import "reflect-metadata";
 import { AccessServiceApp } from './serverLayer/app';
+require('dotenv').config();
 
 const app = new AccessServiceApp();
 const PORT: any = process.env.PORT || 6060;

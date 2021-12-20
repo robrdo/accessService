@@ -4,6 +4,7 @@ import { Permissions } from '../data/models/dto';
 import { ApiKeyModel, ApplicationSettingsModel, TokenHistoryModel, UserModel } from './dbModels/dbmodels';
 import bcrypt, { } from 'bcrypt';
 import { Initializable } from '../infra/initializable';
+import { config } from "dotenv";
 //import { requireInitialize } from "../infra/Initializable";
 
 export default class DbProvider implements Initializable {
@@ -12,7 +13,8 @@ export default class DbProvider implements Initializable {
 
   constructor() {
     let envSettings = process.env;
-    console.log('env ', envSettings.STORAGE);
+    console.log('we here');
+    console.log('env storage', envSettings.STORAGE);
     this._sequelize = new Sequelize({
       dialect: 'sqlite',
       storage: envSettings.STORAGE,

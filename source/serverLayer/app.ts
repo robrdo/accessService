@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import express, { } from 'express';
-import PlainAuthentithication from '../commonServices/authService';
+import PlainAuthentithicationMiddleware from './middleWare/authMiddleware';
 import AccessServiceController from './controllers/accessServiceController';
 import errorMiddleware from './middleWare/errorMiddleware';
 import DbProvider from '../dataAccessLayer/dbProvider';
@@ -8,6 +8,7 @@ import { container } from 'tsyringe';
 import { nameof } from "ts-simple-nameof";
 import { AppSettings, AppSettingsProvider } from "../commonServices/helpers/appSettings";
 import AppBase from "../infra/appBase";
+import HealthController from "./controllers/healthController";
 
 export class AccessServiceApp extends AppBase {
 
@@ -32,7 +33,7 @@ export class AccessServiceApp extends AppBase {
 
     private initializeMiddlewares() {
         //inject
-        let authService = new PlainAuthentithication();
+        let authService = new PlainAuthentithicationMiddleware();
         this.app.use(authService.authenticateRequest);
         //this.app.use(acceptAccessHeaderMiddleware);
         this.app.use(express.urlencoded({ extended: false }));
@@ -41,7 +42,8 @@ export class AccessServiceApp extends AppBase {
     }
 
     private initializeControllers() {
-        this.registerController(AccessServiceController, 'accessService');
+        this.registerController(AccessServiceController, 'accessservice');
+        this.registerController(HealthController, 'health');
         console.log(this.app._router.stack.filter(r => r.route).map(r => r.route.path))
     }
 }
