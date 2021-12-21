@@ -50,10 +50,11 @@ Get tokens GET http://localhost:7070/accessService - simply brings all token
 Delete key DELETE http://localhost:7070/accessService/ {api key} - set status as revoke to the api key, validates existance in db, and won't let to revoke if issuer.UserId != requested.Userid
 
 Get JWT token  POST http://localhost:7070/accessService/authentithicate/ - issue JWT token
-add to headers to execute api-key = generated apikey.
+add to headers to execute 
+- api-key = generated apikey
 validates api-key, added the setting to db if only the issuer of api-key can authentificate it
 
-###Few words about the code
+### Few words about the code
 
 Project structure: 
 
