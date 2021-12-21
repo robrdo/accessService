@@ -63,7 +63,7 @@ Project structure:
 Entry point is app.ts which is initialize controllers in folder server layers. All the web server logic including middleware lies in ServerLayer folder. Controllers have zero business logic, only validates param and calls required services which lies in folder BusinessLayer(BL). BL services are getting the access to the db through the DataAccesLayer (dal). I used ORM Sequelize. In ideal situation I could've build the generic repository to access through it required models.
 
 Server uses DI container to resolve dependencies and inject them in constructor. 
-Routing is build dynamically via decorators in a convinient way. Used some simple magic with Reflect.Metadata and late binding controller with it's context.
+Routing is build dynamically via decorators in convinient way. Used some simple magic with Reflect.Metadata and late binding controller with it's context.
 
 ![image](https://user-images.githubusercontent.com/68990564/146859960-2d47dfcf-a0b0-4375-a534-ecb09b027bf9.png)
 
