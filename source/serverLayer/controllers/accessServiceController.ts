@@ -50,7 +50,7 @@ export default class AccessServiceController {
       let userId: number = Number(request.headers.userid);
       let apiKey: string = removeBraces(request.headers['api-key'].toString()).trim();
       let apiKeyFromDb: ApiKey = await this.apiKeyService.getApiKey(userId, apiKey);
-      if (!apiKeyFromDb || !await this.apiKeyService.validateExistingKey(userId, apiKeyFromDb)) {
+      if (!apiKeyFromDb || apiKeyFromDb && !this.apiKeyService.validateExistingKey(userId, apiKeyFromDb)) {
         return next(new HttpException(400, 'invalid ApiKey'));
       }
       resultToken = await this.tokenService.generateToken(userId, apiKeyFromDb.id, apiKeyFromDb.permissions);
