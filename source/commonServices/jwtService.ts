@@ -33,7 +33,7 @@ export default class JWTService {
     validateToken(token: string): boolean {
         //validates token change to jwt
         try {
-            let decoded = jwt.verify(token, this.appSettings.jwtSecret);
+            let decoded = jwt.verify(token, this.jwtSecret);
         } catch (err) {
             return false;
         }

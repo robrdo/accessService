@@ -52,7 +52,6 @@ class DiRegistration {
     static async registerDependencies(db: DbProvider) {
         container.registerInstance(nameof(DbProvider), db);
         let appSettings = await AppSettingsProvider.GetSettings(db);
-        console.log(JSON.stringify(appSettings));
         container.registerInstance(nameof(AppSettings), appSettings);
     }
 }
