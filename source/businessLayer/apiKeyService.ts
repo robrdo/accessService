@@ -73,7 +73,7 @@ export default class ApiKeyService {
         //explore manual how to track changes
         //issue with tracking
         apiKeyModel.status = ApiKeyStatus.Revoked;
-        apiKeyModel.update({ status: ApiKeyStatus.Revoked });
+        //apiKeyModel.update({ status: ApiKeyStatus.Revoked });
         await apiKeyModel.save();
     }
 
@@ -83,8 +83,11 @@ export default class ApiKeyService {
     }
 
     async validateExistingKey(userId: number, validKey: ApiKey): Promise<[boolean, string]> {
+        console.log("🚀 ~ file: apiKeyService.ts ~ line 86 ~ ApiKeyService ~ validateExistingKey ~ validKey", validKey)
 
-        if (!validKey || validKey.status !== ApiKeyStatus.Active) {
+        console.log("🚀 ~ file: apiKeyService.ts ~ line 89 ~ ApiKeyService ~ validateExistingKey ~ !validKey && validKey.status !== ApiKeyStatus.Active", !validKey && validKey.status !== ApiKeyStatus.Active)
+        console.log("🚀 ~ file: apiKeyService.ts ~ line 90 ~ ApiKeyService ~ validateExistingKey ~ validKey.status", validKey.status)
+        if (!validKey && validKey.status != ApiKeyStatus.Active) {
             return [false, 'outdated key'];
         }
 

@@ -17,7 +17,7 @@ export default class ApiKeyValidator {
     isUserValidForIssuingKey(requiredPermissions: Permissions, userPermissions: Permissions, existingApiKeysForUser: ApiKey[]): [boolean, string] {
         if (requiredPermissions > userPermissions) {
             return [false, "cannot genenerate api key, reason: required permission doesn't match user permissions"];
-        }if (!existingApiKeysForUser.length) {
+        } if (!existingApiKeysForUser.length) {
             return [true, ""];
         }
         let sameKeyExist = existingApiKeysForUser.find(x => x.status !== ApiKeyStatus.Revoked && x.permissions == requiredPermissions);
