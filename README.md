@@ -1,17 +1,13 @@
 # accessService
 microservice for supplying authorization for automated applications
 
+##Requirements
 
-
-What is Contentful?
-Contentful provides a content infrastructure for digital teams to power content in websites, apps, and devices. Unlike a CMS, Contentful was built to integrate with the modern software stack. It offers a central hub for structured content, powerful management and delivery APIs, and a customizable web app that enable developers and content creators to ship digital products faster.
-
-Requirements
 Node > v16.13.1
 Git
 Sqlite
 
-Common setup
+##Common setup
 
 Clone the repo and install the dependencies.
 1) git clone https://github.com/robrdo/accessService.git
