@@ -1,5 +1,5 @@
-import reflect, { } from 'reflect-metadata';
-import { RouteDescriptor, RouteTypes } from '../routingTypes';
+import { } from 'reflect-metadata';
+import { RouteTypes } from '../routingTypes';
 import { decorateRoute } from './methodDecorator';
 
 export function deleteApi(path: string) {

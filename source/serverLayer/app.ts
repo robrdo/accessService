@@ -1,14 +1,15 @@
+import colors from "colors";
+import express from 'express';
 import "reflect-metadata";
-import express, { } from 'express';
-import PlainAuthentithicationMiddleware from './middleWare/authMiddleware';
-import AccessServiceController from './controllers/accessServiceController';
-import errorMiddleware from './middleWare/errorMiddleware';
-import DbProvider from '../dataAccessLayer/dbProvider';
-import { container } from 'tsyringe';
 import { nameof } from "ts-simple-nameof";
-import { AppSettings, AppSettingsProvider } from "../commonServices/helpers/appSettings";
+import { container } from 'tsyringe';
+import DbProvider from '../dataAccessLayer/dbProvider';
 import AppBase from "../infra/appBase";
+import { AppSettings, AppSettingsProvider } from "../infra/config/appSettings";
+import AccessServiceController from './controllers/accessServiceController';
 import HealthController from "./controllers/healthController";
+import PlainAuthentithicationMiddleware from './middleWare/authMiddleware';
+import errorMiddleware from './middleWare/errorMiddleware';
 
 export class AccessServiceApp extends AppBase {
 
@@ -17,12 +18,13 @@ export class AccessServiceApp extends AppBase {
     }
 
     public async init(): Promise<void> {
+        console.log(colors.yellow('initing the application'))
         let db: DbProvider = await this.initDb();
-        console.log('db init successfully');
+        console.log(colors.yellow('db init successfully'));
         await DiRegistration.registerDependencies(db);
-        console.log('actualy inited 2');
         this.initializeMiddlewares();
         this.initializeControllers();
+        this.app.use(errorMiddleware);
     }
 
     private async initDb(): Promise<DbProvider> {
@@ -35,16 +37,14 @@ export class AccessServiceApp extends AppBase {
         //inject
         let authService = new PlainAuthentithicationMiddleware();
         this.app.use(authService.authenticateRequest);
-        //this.app.use(acceptAccessHeaderMiddleware);
-        this.app.use(express.urlencoded({ extended: false }));
         this.app.use(express.json());
-        this.app.use(errorMiddleware);
     }
 
     private initializeControllers() {
         this.registerController(AccessServiceController, 'accessservice');
         this.registerController(HealthController, 'health');
-        console.log(this.app._router.stack.filter(r => r.route).map(r => r.route.path))
+        console.log("app is started with following routes:");
+        console.log(this.app._router.stack.filter(r => r.route).map(r => r.route.path));
     }
 }
 
@@ -52,6 +52,7 @@ class DiRegistration {
     static async registerDependencies(db: DbProvider) {
         container.registerInstance(nameof(DbProvider), db);
         let appSettings = await AppSettingsProvider.GetSettings(db);
+        console.log(JSON.stringify(appSettings));
         container.registerInstance(nameof(AppSettings), appSettings);
     }
 }

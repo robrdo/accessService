@@ -1,10 +1,10 @@
+import bcrypt from 'bcrypt';
 import "reflect-metadata";
-import { Sequelize } from 'sequelize-typescript'
+import { Sequelize } from 'sequelize-typescript';
 import { Permissions } from '../data/models/dto';
-import { ApiKeyModel, ApplicationSettingsModel, TokenHistoryModel, UserModel } from './dbModels/dbmodels';
-import bcrypt, { } from 'bcrypt';
 import { Initializable } from '../infra/initializable';
-import { config } from "dotenv";
+import colors from "colors";
+import { ApiKeyModel, ApplicationSettingsModel, TokenHistoryModel, UserModel } from './dbModels/dbmodels';
 //import { requireInitialize } from "../infra/Initializable";
 
 export default class DbProvider implements Initializable {
@@ -13,11 +13,11 @@ export default class DbProvider implements Initializable {
 
   constructor() {
     let envSettings = process.env;
-    console.log('we here');
-    console.log('env storage', envSettings.STORAGE);
+    let logdb = !Boolean(envSettings.DB_OUTPUT_LOG) || (()=>{});
     this._sequelize = new Sequelize({
       dialect: 'sqlite',
-      storage: envSettings.STORAGE,
+      storage: envSettings.DB_PATH,
+      logging: logdb,
       models: [UserModel, ApiKeyModel, TokenHistoryModel, ApplicationSettingsModel]
     });
     //this._sequelize.getRepository
@@ -30,6 +30,7 @@ export default class DbProvider implements Initializable {
     if (this._wasInit) {
       return new Promise(resolve => resolve(this._wasInit));
     }
+    console.log(colors.yellow('Initing database...'));
     await this.checkConnection();
     await this.populateDb();
     this._wasInit = true;
@@ -41,7 +42,7 @@ export default class DbProvider implements Initializable {
     try {
       await this._sequelize.sync({ force: true });
       await this._sequelize.authenticate();
-      console.log('Connection has been established successfully.');
+      console.log(colors.green('Connection has been established successfully.'));
     } catch (error) {
       console.error('Unable to connect to the database:', error);
       throw new Error("Unable to connect to the database");

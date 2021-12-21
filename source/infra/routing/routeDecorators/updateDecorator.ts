@@ -1,4 +1,4 @@
-import { RouteDescriptor, RouteTypes } from '../routingTypes';
+import { RouteTypes } from '../routingTypes';
 import { decorateRoute } from './methodDecorator';
 
 export function updateApi(path: string) {

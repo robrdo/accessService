@@ -1,91 +1,111 @@
+import { NextFunction, Request, Response } from "express";
 import "reflect-metadata";
-import express, { Request, Response, Express, NextFunction } from "express";
-import { autoInjectable, container, injectable, singleton } from "tsyringe";
+import { ne } from "sequelize/lib/operators";
+import { injectable } from "tsyringe";
 import ApiKeyService from "../../businessLayer/apiKeyService";
+import { BusinessError } from "../../businessLayer/errors/logicError";
 import TokenService from "../../businessLayer/tokenService";
-import { ApiKey, Permissions } from "../../data/models/dto";
+import PermissionsHelper from "../../commonServices/helpers/permissionHelper";
+import { removeBraces } from "../../commonServices/helpers/stringHelper";
+import { ApiKey } from "../../data/models/dto";
+import TokensResponse from "../../data/responseModels/tokensResponse";
 import { deleteApi } from "../../infra/routing/routeDecorators/deleteDecorator";
 import { getApi } from "../../infra/routing/routeDecorators/getDecorator";
 import { postApi } from "../../infra/routing/routeDecorators/postDecorator";
 import HttpException from "../exceptions/httpException";
-import { nextTick } from "process";
 
 @injectable()
 export default class AccessServiceController {
 
   constructor(private apiKeyService: ApiKeyService,
-    private tokenService: TokenService) {
+    private tokenService: TokenService,
+    private permissionsHelper: PermissionsHelper) {
   }
 
   @postApi('')
-  async createAPIkey(request: Request, response: Response): Promise<void> {
-    let apiKeyService = container.resolve(ApiKeyService);
-    let userId = Number(request.headers.userid);
-    console.log("uid" + request.headers.userid);
-    //validate permissions
-    let permParam = request.body.permissions;
-    console.log("permParam");
-    console.log(permParam);
-    let permissions: string[] = ['Read'];
-    let requiredPermission: Permissions = Permissions.Read;
-    //todo: validate enum with ignore case
-    /*permissions.forEach(element => {
-      let index:any = Permissions[<any>element];
-      requiredPermission |=  Permissions[<any>index];
-    });*/
-    let apiKey = await apiKeyService.generateApiKey(userId, requiredPermission);
+  async createAPIkey(request: Request, response: Response, next: NextFunction): Promise<void> {
+    let apiKey: string;
+    try {
+      let userId = Number(request.headers.userid);
+      let requestPermissions = request.body['permissions'];
+      if (!requestPermissions) {
+        return next(new HttpException(400, "permissions params"))
+      }
+      let requiredPermissions = this.permissionsHelper.parseFromArray(requestPermissions, true);
+      apiKey = await this.apiKeyService.generateApiKey(userId, requiredPermissions);
+    }
+    catch (e) {
+      let er = this.logAndFormatError(e)
+      return next(er);
+    };
     response.send({
       apikey: apiKey
     });
   }
 
-  //post/authentithicate
   @postApi('authentithicate')
   async useAPIKey(request: Request, response: Response, next: NextFunction) {
-    let apiKeyService = container.resolve(ApiKeyService);
-    let tokenService = container.resolve(TokenService);
-    let userId: number = Number(request.headers.userid);
-    let apiKey: string = request.headers['api-key'].toString();
-    let apiKeyFromDb: ApiKey = await apiKeyService.getApiKey(userId, apiKey);
-    if (!await apiKeyService.validateExistingKey(userId, apiKeyFromDb)) {
-      next("ivalid ApiKey");
+    let resultToken: string;
+    try {
+      let userId: number = Number(request.headers.userid);
+      let apiKey: string = removeBraces(request.headers['api-key'].toString());
+      let apiKeyFromDb: ApiKey = await this.apiKeyService.getApiKey(userId, apiKey);
+      if (!apiKeyFromDb || !await this.apiKeyService.validateExistingKey(userId, apiKeyFromDb)) {
+        return next(new HttpException(400, 'invalid ApiKey'));
+      }
+      resultToken = await this.tokenService.generateToken(userId, apiKeyFromDb.id, apiKeyFromDb.permissions);
     }
-    //into object
-    return await tokenService.generateToken(userId, apiKeyFromDb.id, apiKeyFromDb.permissions);
+    catch (e) {
+      return next(this.logAndFormatError(e));
+    }
+
+    response.send({
+      token: resultToken
+    });
   }
 
-  //DELETE /{:id}
-  @deleteApi('')//'/{:id}')
+  @deleteApi(':apikey')
   async revokeAPIKey(request: Request, response: Response, next: NextFunction) {
-    let apiKeyService = container.resolve(ApiKeyService);
-    let userId = Number(request.headers.userid);
-    let apikey = request.headers['api-key'].toString();
-    if (!apikey) {
-      next(new HttpException(400, 'no api-key presented'));
+    try {
+      let userId = Number(request.headers.userid);
+      let apikey = request.params.apikey.toString();
+      apikey = removeBraces(apikey);
+      if (!apikey) {
+        return next(new HttpException(400, 'no api-key presented'));
+      }
+      await this.apiKeyService.revoke(userId, apikey);
     }
-    return await apiKeyService.revoke(userId, apikey);
+    catch (e) {
+      return next(this.logAndFormatError(e));
+    }
+    response.status(200).send({
+      status: 'deleted'
+    });
   }
 
   @getApi('')
   async getTokens(request: Request, response: Response, next: NextFunction) {
-    //issue with di
-    let tokenService = container.resolve(TokenService);
-    return await tokenService.getTokensHistory().
-      then((tokens) => {
-        if (tokens) {
-          response.send(tokens);
-        } else {
-          //SHOULD I SEND THST OR LIST EMPTY
-          next(new HttpException(404, 'Post not found'));
-          //response.status(404).send({ error: 'TOKENs not found' });
-        }
-      });
-  }
-}
+    let tokens: TokensResponse[];
+    try {
+      tokens = await this.tokenService.getTokensHistory()
+    }
+    catch (e) {
+      return next(this.logAndFormatError(e));
+    }
 
-/*
-export class EnumHelper {
-  parse<TEnum>(value : string){
-/*if (value in TEnum)
-  }*/
-//}
+    response.send({
+      tokens: tokens
+    });
+  }
+
+  //#region  methods
+
+  //todo move to base controller
+  logAndFormatError(e: any): HttpException {
+    console.log(e);
+    let promptMessage: BusinessError = e as BusinessError;
+    return new HttpException(500, promptMessage ? promptMessage.message : '');
+  }
+
+  //#endregion
+}

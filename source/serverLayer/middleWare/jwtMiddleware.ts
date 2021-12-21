@@ -1,5 +1,5 @@
-import JWTService, {  } from "../../commonServices/jwtService";
-import express, { Express } from 'express';
+import express from 'express';
+import JWTService from "../../commonServices/jwtService";
 
 export default class JwtMiddleware {
   constructor(private jwtService: JWTService) { }

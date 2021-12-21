@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { RouteDescriptor, RouteTypes } from '../routingTypes';
+import { RouteTypes } from '../routingTypes';
 import { decorateRoute } from './methodDecorator';
 
 export function getApi(path: string) {

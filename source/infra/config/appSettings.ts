@@ -1,16 +1,18 @@
-import "reflect-metadata";
-import { ApplicationSettings } from "../../data/models/dto";
 import 'dotenv/config';
-import DbProvider from "../../dataAccessLayer/dbProvider";
+import "reflect-metadata";
+import { injectable, singleton } from 'tsyringe';
+import { ApplicationSettings } from "../../data/models/dto";
 import { ApplicationSettingsModel } from "../../dataAccessLayer/dbModels/dbmodels";
+import DbProvider from "../../dataAccessLayer/dbProvider";
 
 //decorates appconfig from different sources
+@singleton()
 export class AppSettings {
     readonly jwtSecret: string
     readonly apiKeyValidOnlyForIssuer: boolean
 }
 
-export class AppSettingsProvider {
+export class AppSettingsProvider implements AppSettings {
 
     //#region singleton
 
@@ -20,13 +22,13 @@ export class AppSettingsProvider {
         if (this._instance) {
             return this._instance;
         }
-        
+
         if (!dbProvider.isInit()) {
             throw new Error("not init");
         }
         let dbSettings = await this.getSettingsFromDb();
-        let envSettings = process.env;
-        this._instance = new AppSettingsProvider(dbSettings.apiKeyValidOnlyForIssuer, envSettings.JWT_SECRET);
+        let jwt = process.env.JWT_SECRET;
+        this._instance = new AppSettingsProvider(dbSettings.apiKeyValidOnlyForIssuer, jwt);
     }
 
     //#endregion

@@ -8,5 +8,6 @@ export enum RouteTypes {
 export interface RouteDescriptor {
     method: RouteTypes,
     route: string,
-    methodInvocation: any
+    methodName: string,
+    isDefault?: boolean
 }

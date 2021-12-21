@@ -3,9 +3,13 @@ import HttpException from "../exceptions/httpException";
 
 function errorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
     let httpError: HttpException = error as HttpException;
-    //TODO: HOW TO CHECK HERE
     let status = httpError ? httpError.status || 500 : 500;
-    const message = error.message || 'Something went wrong';
+    let message = error.message || 'Something went wrong';
+
+    if (response.headersSent) {
+        return next(error);
+    }
+    
     response
         .status(status)
         .send({

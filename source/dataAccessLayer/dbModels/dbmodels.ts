@@ -1,5 +1,5 @@
-import { Model, Table, AutoIncrement, PrimaryKey, Column, AllowNull, NotEmpty, ForeignKey, HasMany, BelongsTo } from "sequelize-typescript";
-import { ApiKey, ApiKeyStatus, ApplicationSettings, TokenHistory, User, UserActivity, Permissions } from "../../data/models/dto";
+import { AutoIncrement, BelongsTo, Column, DataType, ForeignKey, HasMany, Model, PrimaryKey, Table } from "sequelize-typescript";
+import { ApiKey, ApiKeyStatus, ApplicationSettings, Permissions, TokenHistory, User } from "../../data/models/dto";
 
 @Table(
     {
@@ -7,8 +7,6 @@ import { ApiKey, ApiKeyStatus, ApplicationSettings, TokenHistory, User, UserActi
     }
 )
 export class ApplicationSettingsModel extends Model implements ApplicationSettings {
-    /*@Column
-    jwtSecret: string*/
     @Column
     apiKeyValidOnlyForIssuer: boolean
 }
@@ -19,10 +17,8 @@ export class ApplicationSettingsModel extends Model implements ApplicationSettin
         timestamps: true
     }
 )
+//{primaryKey: true}
 export class UserModel extends Model implements User {
-    @PrimaryKey
-    @Column
-    id?: number | null //to simplify used just number
     @Column
     firstName: string
     @Column
@@ -46,7 +42,6 @@ export class ApiKeyModel extends Model implements ApiKey {
     @ForeignKey(() => UserModel)
     @Column
     userId: number
-    @PrimaryKey
     @Column
     token?: string
     @Column
@@ -65,9 +60,8 @@ export class ApiKeyModel extends Model implements ApiKey {
     }
 )
 export class TokenHistoryModel extends Model implements TokenHistory {
-    @PrimaryKey
     @Column
-    token?: string | null
+    token: string | null
     @ForeignKey(() => ApiKeyModel)
     @Column
     relatedApiKeyId: number

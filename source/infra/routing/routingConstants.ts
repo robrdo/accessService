@@ -1,3 +1,3 @@
-export const CONTROLLERPATH = 'CONTROLLERPATH'
-export const ROUTES = 'ROUTES'
+export const CONTROLLERPATH = 'controllerpath'
+export const ROUTES = 'routes'
 

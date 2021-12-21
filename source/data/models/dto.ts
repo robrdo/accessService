@@ -16,14 +16,14 @@ export interface ApplicationSettings {
 export interface ApiKey {
     id?: number | null
     userId: number
-    //tODO: arguable
     token?: string
     status: ApiKeyStatus
     permissions: Permissions
 }
 
 export interface TokenHistory {
-    token?: string | null
+    id?: number | null
+    token: string
     relatedApiKeyId: number
     //status : 
     lastUpdate: Date
@@ -51,11 +51,11 @@ export enum Permissions {
 }
 
 export enum ApiKeyStatus {
-    Active,
-    Revoked
+    Revoked = 0,
+    Active = 1
 }
 
 export enum TokenStatus {
-    Active,
-    Expired
+    Expired = 0,
+    Active = 1
 }

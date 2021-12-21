@@ -1,11 +1,13 @@
 import { getApi } from "../../infra/routing/routeDecorators/getDecorator";
-import express, { Request, Response, Express, NextFunction } from "express";
+import { Request, Response } from "express";
+import { startUpRoute } from "../../infra/routing/routeDecorators/startUpRouteDecorator";
 export default class HealthController{
 
 constructor() {
     
 }
 
+@startUpRoute()
 @getApi('')
 healthCheck(request: Request, response: Response) {
     response.send(

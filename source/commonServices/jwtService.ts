@@ -1,21 +1,26 @@
+import jwt from "jsonwebtoken";
 import "reflect-metadata";
-import { AppSettings } from "./helpers/appSettings";
-import jwt, { } from "jsonwebtoken";
+import { injectable, singleton } from "tsyringe";
 import { Permissions } from "../data/models/dto";
-import { inject, singleton } from "tsyringe";
+import DbProvider from "../dataAccessLayer/dbProvider";
+import { AppSettings, AppSettingsProvider } from "../infra/config/appSettings";
+import PermissionsHelper from "./helpers/permissionHelper";
 
 @singleton()
+@injectable()
 export default class JWTService {
-    constructor(private appSettings: AppSettings) {
+    constructor(private appSettings: AppSettings, private permissionHelper: PermissionsHelper) {
     }
-    
+
     async generateToken(userId: number, requiredPermissions: Permissions): Promise<string> {
-        let permissions = Object.values(Permissions).filter(value => typeof value === 'string')
+        let parsePermissions = this.permissionHelper.parseBack(requiredPermissions);
+
+        let set = AppSettingsProvider.GetSettings(new DbProvider());
         let token = await jwt.sign(
             {
                 user_id: userId,
-                permissions: permissions
-            }, 
+                permissions: parsePermissions
+            },
             this.appSettings.jwtSecret,
             {
                 expiresIn: "3h",

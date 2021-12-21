@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { TokenHistoryModel } from "../dataAccessLayer/dbModels/dbmodels";
-import { ApiKey, Permissions, TokenHistory } from "../data/models/dto";
-import TokensResponse from "../data/responseModels/tokensResponse";
-import JWTService from "../commonServices/jwtService";
 import { singleton } from "tsyringe";
+import JWTService from "../commonServices/jwtService";
+import { Permissions, TokenHistory } from "../data/models/dto";
+import TokensResponse from "../data/responseModels/tokensResponse";
+import { TokenHistoryModel } from "../dataAccessLayer/dbModels/dbmodels";
 
 @singleton()
 export default class TokenService {
@@ -17,7 +17,7 @@ export default class TokenService {
         new TokenHistoryModel({
             token: token,
             relatedApiKeyId: apiKeyId,
-            requiredPermissions: requiredPermissions,
+            permissions: requiredPermissions,
             lastUpdate: Date.now()
         });
         //update apiKeyUsage table

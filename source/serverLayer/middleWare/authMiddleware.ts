@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express from 'express';
 
 //we need class in case real usage we would imject some service
 export default class PlainAuthentithicationMiddleware {
