@@ -14,13 +14,14 @@ export default class TokenService {
 
     async generateToken(userId: number, apiKeyId: number, requiredPermissions: Permissions): Promise<string> {
         let token = await this.jwtService.generateToken(userId, requiredPermissions);
-        new TokenHistoryModel({
+        let tokenModel = new TokenHistoryModel({
             token: token,
             relatedApiKeyId: apiKeyId,
             permissions: requiredPermissions,
             lastUpdate: Date.now()
         });
-        //update apiKeyUsage table
+        
+        await tokenModel.save();
         return token;
     }
 

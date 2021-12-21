@@ -7,21 +7,22 @@ import { AppSettings, AppSettingsProvider } from "../infra/config/appSettings";
 import PermissionsHelper from "./helpers/permissionHelper";
 
 @singleton()
-@injectable()
 export default class JWTService {
+    private jwtSecret: string;
     constructor(private appSettings: AppSettings, private permissionHelper: PermissionsHelper) {
+        //todo issue with appsettings resolve from container, check
+        this.jwtSecret = process.env.JWT_SECRET;
     }
 
     async generateToken(userId: number, requiredPermissions: Permissions): Promise<string> {
         let parsePermissions = this.permissionHelper.parseBack(requiredPermissions);
-
-        let set = AppSettingsProvider.GetSettings(new DbProvider());
+        //todo: put expiration in settings
         let token = await jwt.sign(
             {
                 user_id: userId,
                 permissions: parsePermissions
             },
-            this.appSettings.jwtSecret,
+            this.jwtSecret,
             {
                 expiresIn: "3h",
             }

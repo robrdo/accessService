@@ -54,6 +54,12 @@ add to headers to execute
 - api-key = generated apikey
 validates api-key, added the setting to db if only the issuer of api-key can authentificate it
 
+### Example scenarion
+1. get api key
+2. authorise it
+3. revoke
+4. get tokens history
+
 ### Few words about the code
 
 Project structure: 

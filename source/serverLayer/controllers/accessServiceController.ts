@@ -48,7 +48,7 @@ export default class AccessServiceController {
     let resultToken: string;
     try {
       let userId: number = Number(request.headers.userid);
-      let apiKey: string = removeBraces(request.headers['api-key'].toString());
+      let apiKey: string = removeBraces(request.headers['api-key'].toString()).trim();
       let apiKeyFromDb: ApiKey = await this.apiKeyService.getApiKey(userId, apiKey);
       if (!apiKeyFromDb || !await this.apiKeyService.validateExistingKey(userId, apiKeyFromDb)) {
         return next(new HttpException(400, 'invalid ApiKey'));
@@ -69,7 +69,7 @@ export default class AccessServiceController {
     try {
       let userId = Number(request.headers.userid);
       let apikey = request.params.apikey.toString();
-      apikey = removeBraces(apikey);
+      apikey = removeBraces(apikey).trim();
       if (!apikey) {
         return next(new HttpException(400, 'no api-key presented'));
       }

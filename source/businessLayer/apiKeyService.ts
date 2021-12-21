@@ -38,7 +38,6 @@ export default class ApiKeyService {
         //check how it works under the hood in case we need Promise
         let key = uuidAPIKey.create();
         model.token = key.uuid
-        console.log(key.apiKey);
         await model.save();
         return [key.apiKey, model]
     }
@@ -63,7 +62,7 @@ export default class ApiKeyService {
 
     async revoke(userId: number, apiKey: string) {
         let uuidKey = uuidAPIKey.toUUID(apiKey);
-        let apiKeyModel = await ApiKeyModel.findOne({ where: { token: uuidKey }, include: UserModel });
+        let apiKeyModel = await ApiKeyModel.findOne({ where: { token: uuidKey, status: 1 }, include: UserModel });
 
         if (!apiKeyModel) {
             throw new BusinessError("KeyNotFound");
@@ -71,7 +70,10 @@ export default class ApiKeyService {
         if (apiKeyModel.user.id !== userId) {
             throw new BusinessError("Unauthorised - only issuer can delete that key");
         }
+        //explore manual how to track changes
+        //issue with tracking
         apiKeyModel.status = ApiKeyStatus.Revoked;
+        apiKeyModel.update({ status: ApiKeyStatus.Revoked });
         await apiKeyModel.save();
     }
 
