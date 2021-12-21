@@ -1,13 +1,13 @@
 # accessService
 microservice for supplying authorization for automated applications
 
-##Requirements
+## Requirements
 
 Node > v16.13.1
 Git
 Sqlite
 
-##Common setup
+## Common setup
 
 Clone the repo and install the dependencies.
 1) git clone https://github.com/robrdo/accessService.git
