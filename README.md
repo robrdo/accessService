@@ -11,7 +11,7 @@ Sqlite
 
 Clone the repo and install the dependencies.
 1) git clone https://github.com/robrdo/accessService.git
-2) cd the-example-app.nodejs
+2) cd to the root folder of the application (where packages.config lies)
 3) npm install 
 
 Prepare config
