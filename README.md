@@ -3,9 +3,9 @@ microservice for supplying authorization for automated applications
 
 ## Requirements
 
-Node > v16.13.1
-Git
-Sqlite
+Node > v16.13.1  
+Git  
+Sqlite  
 
 ## Common setup
 
@@ -17,11 +17,11 @@ Clone the repo and install the dependencies.
 Prepare config
 
 create file with an empty name and extension .env.
-Fill it with the following content:
+Fill it with the following content: 
 
-DB_PATH=:memory: or use a local path
-PORT=7070
-JWT_SECRET
+DB_PATH=:memory: or use a local path  
+PORT=7070   
+JWT_SECRET  
 
 
 To start the express server:
